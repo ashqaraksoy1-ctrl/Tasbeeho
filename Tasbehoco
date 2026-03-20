@@ -1,0 +1,141 @@
+# Tasbeeho
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>عداد الأذكار المتقدم</title>
+<style>
+    body {
+        text-align: center;
+        font-family: Arial, sans-serif;
+        background-color: #222;
+        color: white;
+        padding-top: 50px;
+    }
+    h1 { color: gold; margin-bottom: 30px; }
+    #canvasContainer {
+        position: relative;
+        width: 250px;
+        height: 250px;
+        margin: 0 auto 30px auto;
+    }
+    #dhikrCanvas {
+        background-color: #222;
+    }
+    #dhikrText {
+        position: absolute;
+        width: 100%;
+        top: 100px;
+        left: 0;
+        font-size: 24px;
+        color: #FFD700;
+        text-align: center;
+    }
+    #number {
+        position: absolute;
+        width: 100%;
+        top: 130px;
+        left: 0;
+        font-size: 32px;
+        text-align: center;
+        color: white;
+    }
+    button {
+        font-size: 24px;
+        padding: 10px 25px;
+        margin: 10px;
+        cursor: pointer;
+        border: none;
+        border-radius: 8px;
+        background-color: #555;
+        color: white;
+    }
+</style>
+</head>
+<body>
+
+<h1>عداد الأذكار</h1>
+
+<div id="canvasContainer">
+    <canvas id="dhikrCanvas" width="250" height="250"></canvas>
+    <div id="dhikrText">استغفر الله</div>
+    <div id="number">0</div>
+</div>
+
+<button onclick="changeCount(-1)">-1 ذكر</button>
+<button onclick="changeCount(1)">+1 ذكر</button>
+<button onclick="resetCounter()">إعادة</button>
+
+<audio id="clickSound">
+    <source src="click.mp3" type="audio/mpeg">
+</audio>
+
+<script>
+const canvas = document.getElementById('dhikrCanvas');
+const ctx = canvas.getContext('2d');
+const dhikrText = document.getElementById('dhikrText');
+const numberEl = document.getElementById('number');
+const sound = document.getElementById('clickSound');
+
+let totalCount = localStorage.getItem('totalCount') ? parseInt(localStorage.getItem('totalCount')) : 0;
+let cycleCount = totalCount % 33; // تعبئة الدائرة الحالية
+const maxCycle = 33;
+
+const dhikrs = ["استغفر الله", "الحمد لله", "سبحان الله"];
+let dhikrIndex = Math.floor(totalCount / maxCycle) % dhikrs.length;
+
+// رسم الدائرة
+function drawCircle() {
+    ctx.clearRect(0,0,canvas.width, canvas.height);
+    // دائرة الخلفية
+    ctx.beginPath();
+    ctx.arc(125,125,100,0,2*Math.PI);
+    ctx.strokeStyle = "#555";
+    ctx.lineWidth = 15;
+    ctx.stroke();
+
+    // دائرة التقدم الحالية (حسب cycleCount)
+    let endAngle = (cycleCount / maxCycle) * 2 * Math.PI;
+    ctx.beginPath();
+    ctx.arc(125,125,100,-Math.PI/2,endAngle - Math.PI/2);
+    ctx.strokeStyle = "#4CAF50";
+    ctx.lineWidth = 15;
+    ctx.stroke();
+}
+
+// تحديث النص والعداد
+function updateDisplay() {
+    numberEl.innerText = totalCount;
+    dhikrText.innerText = dhikrs[dhikrIndex];
+}
+
+// تغيير العدد
+function changeCount(value) {
+    totalCount += value;
+    if(totalCount < 0) totalCount = 0;
+    cycleCount = totalCount % maxCycle;
+    dhikrIndex = Math.floor(totalCount / maxCycle) % dhikrs.length;
+    updateDisplay();
+    drawCircle();
+    sound.play();
+    localStorage.setItem('totalCount', totalCount);
+}
+
+// إعادة العداد
+function resetCounter() {
+    totalCount = 0;
+    cycleCount = 0;
+    dhikrIndex = 0;
+    updateDisplay();
+    drawCircle();
+    sound.play();
+    localStorage.setItem('totalCount', totalCount);
+}
+
+// عرض أول مرة
+drawCircle();
+updateDisplay();
+</script>
+
+</body>
+</html>
